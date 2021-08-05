@@ -60,3 +60,22 @@ MOVE
 Output:
     You need to place the robot before you can move it
 
+h)---------------
+NOTE: noerrstart mode
+
+PLACE -1,2,EAST
+MOVE
+MOVE
+LEFT
+MOVE
+REPORT
+MAP
+
+Output:
+    -------
+    |¤¤¤¤¤|
+    |¤¤¤¤¤|
+    |¤¤¤¤¤|
+    |¤¤¤¤¤|
+    |¤¤¤¤¤|
+    -------

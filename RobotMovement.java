@@ -1,5 +1,6 @@
 import java.util.Scanner;
 
+
 enum Direction
 {
     NORTH, EAST, SOUTH, WEST
@@ -28,7 +29,9 @@ class ToyRobot
 
     public void report()
     {
-        System.out.println(String.format("%s,%s,%s", Xpos, Ypos, Face));
+        if (Face != null){
+            System.out.println(String.format("%s,%s,%s", Xpos, Ypos, Face));
+        }
     }
 
     public void setXPos(int x_pos)
@@ -95,19 +98,21 @@ class TableTop
 {
     private int Width;
     private int Height;
+    private boolean errOutput;
     //private char[][] playSpace;
 
     private ToyRobot robot;
 
     TableTop()
     {
-
+        robot = new ToyRobot();
     }
 
-    TableTop(int width, int height)
+    TableTop(int width, int height, boolean errorOutput)
     {
         Width = width;
         Height = height;
+        errOutput = errorOutput;
         // playSpace = new char[height][width];
 
         robot = new ToyRobot();
@@ -128,8 +133,11 @@ class TableTop
             return true;
         }
 
-        System.out.println(String.format("Cannot %s the robot to position:\n\tx: %d \n\ty: %d\n", movement,
-                xPosProposal, yPosProposal));
+        if (errOutput){
+            System.out.println(String.format("Cannot %s the robot to position:\n\tx: %d \n\ty: %d\n", movement,
+            xPosProposal, yPosProposal));
+        }
+        
         return false;
     }
 
@@ -163,7 +171,9 @@ class TableTop
         }
         else
         {
-            System.out.println("You need to place the robot before you can rotate it\n");
+            if (errOutput){
+                System.out.println("You need to place the robot before you can rotate it\n");
+            }
         }
     }
 
@@ -189,7 +199,9 @@ class TableTop
         }
         else
         {
-            System.out.println("You need to place the robot before you can rotate it\n");
+            if (errOutput){
+                System.out.println("You need to place the robot before you can rotate it\n");
+            }
         }
     }
 
@@ -228,7 +240,9 @@ class TableTop
         }
         else
         {
-            System.out.println("You need to place the robot before you can move it\n");
+            if (errOutput){
+                System.out.println("You need to place the robot before you can move it\n");
+            }
         }
 
     }
@@ -249,11 +263,17 @@ class TableTop
 
             for (int j = 0; j < Width; j++)
             {
-                if (robot.getPlaced() && i == robot.getYPos() && j == robot.getXPos())
+                if (robot.getPlaced())
                 {
-                    System.out.print(robot.getDirectionChar());
+                    if (i == robot.getYPos() && j == robot.getXPos()){
+                        System.out.print(robot.getDirectionChar());
+                    }
+                    else
+                    {   
+                        System.out.print('¤');
+                    }
                 }
-                else
+                else if (!robot.getPlaced())
                 {
                     System.out.print('¤');
                 }
@@ -263,7 +283,10 @@ class TableTop
 
         System.out.println("-------");// Border of play space
 
-        System.out.println(String.format("%s - Robot where the point is it's direction", robot.getDirectionChar()));
+        if (robot.getPlaced())
+        {
+            System.out.println(String.format("%s - Robot where the point is it's direction", robot.getDirectionChar()));
+        }
     }
 }
 
@@ -311,6 +334,7 @@ public class RobotMovement
 
         boolean inGame = false;
         boolean menu = true;
+        boolean errOutput = true;
         boolean initialEntry = false;
         boolean applicationStillRunning = true;
 
@@ -324,6 +348,7 @@ public class RobotMovement
 
             System.out.println("Enter a command to begin:\n" + "START - Starts the game\n"
                     + "NOMENUSTART - Starts the game with the menu disabled - Note, will not disable error outputs\n"
+                    + "NOERRSTART - Starts with same parameters as NOMENUSTART, but will disable error outputs\n"
                     + "EXIT - Exits the application\n" + "=>");
 
             userInput = lineIn.nextLine();
@@ -332,13 +357,18 @@ public class RobotMovement
             {
                 case "START":
                     inGame = true;
-                    table = new TableTop(5, 5);
+                    table = new TableTop(5, 5, errOutput);
                     break;
                 case "NOMENUSTART":
                     inGame = true;
                     menu = false;
-                    initialEntry = true;
-                    table = new TableTop(5, 5);
+                    table = new TableTop(5, 5, errOutput);
+                    break;
+                case "NOERRSTART":
+                    inGame = true;
+                    menu = false;
+                    errOutput = false;
+                    table = new TableTop(5, 5, errOutput);
                     break;
                 case "EXIT":
                     applicationStillRunning = false;
@@ -393,18 +423,23 @@ public class RobotMovement
                                 }
                                 else
                                 {
-                                    System.out.println(String.format(
+                                    if (errOutput){
+                                        System.out.println(String.format(
                                             "%s does not contain valid values\n" + "\txPOS valid: %s\n"
                                                     + "\tyPOS valid: %s\n" + "\tDirection valid: %s\n",
                                             commands[1], xPosValid, yPosValid, directionValid));
+                                    }
+
                                 }
                             }
                             else
                             {
-                                System.out.println(String.format(
+                                if (errOutput){
+                                    System.out.println(String.format(
                                         "Your output: %s is not a valid input\n"
                                                 + "The parameters of the PLACE command cannot have spaces",
                                         userInput.toUpperCase()));
+                                }
                             }
                             break;
                         case "LEFT":
@@ -426,9 +461,11 @@ public class RobotMovement
                             inGame = false;
                             break;
                         default:
-                            System.out.println(String.format("%s is an unknown command\n"
+                            if (errOutput){
+                                System.out.println(String.format("%s is an unknown command\n"
                                     + "Please use the following commands\n" + "\tPLACE X,Y,DIRECTION\n" + "\tLEFT\n"
                                     + "\tRIGHT\n" + "\tMOVE\n" + "\tREPORT\n" + "\tEXIT\n", commands[0]));
+                            }
                     }
                 } while (inGame);
             }
